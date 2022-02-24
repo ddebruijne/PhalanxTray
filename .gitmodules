@@ -1,0 +1,3 @@
+[submodule "lib/tray"]
+	path = lib/tray
+	url = https://github.com/dmikushin/tray.git

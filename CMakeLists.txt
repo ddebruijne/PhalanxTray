@@ -9,9 +9,9 @@ if(WIN32)
 endif()
 
 if(WIN32)
-	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY $<1:${CMAKE_CURRENT_LIST_DIR}/bin>)
+	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY $<1:${CMAKE_BINARY_DIR}/bin>)
 else()
-	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/bin)
+	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 endif()
 
 add_subdirectory(lib/tray)
@@ -22,5 +22,5 @@ add_executable(PhalanxTray
 target_include_directories(PhalanxTray PUBLIC lib/tray)
 target_link_libraries(PhalanxTray PUBLIC tray::tray)
 
-configure_file(${CMAKE_CURRENT_LIST_DIR}/data/icon.ico ${CMAKE_CURRENT_LIST_DIR}/bin/icon.ico COPYONLY)
-configure_file(${CMAKE_CURRENT_LIST_DIR}/data/icon.png ${CMAKE_CURRENT_LIST_DIR}/bin/icon.png COPYONLY)
+configure_file(${CMAKE_CURRENT_LIST_DIR}/data/icon.ico ${CMAKE_BINARY_DIR}/bin/icon.ico COPYONLY)
+configure_file(${CMAKE_CURRENT_LIST_DIR}/data/icon.png ${CMAKE_BINARY_DIR}/bin/icon.png COPYONLY)

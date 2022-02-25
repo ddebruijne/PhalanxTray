@@ -7,7 +7,7 @@ std::vector<TrayMenu*> menu;
 TrayIcon tr = { "icon.png", "icon.ico", "Phalanx Tray App", menu };
 TrayMenu comPorts = { "Serial Port", true, false, false, nullptr };
 
-std::function changeModel = [&](TrayMenu* tm){ };
+std::function changeModel = [](TrayMenu* tm){ };
 
 int main()
 {

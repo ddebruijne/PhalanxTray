@@ -2,7 +2,10 @@
 #include "serial/serial.h"
 #include <iostream>
 
+#include "savedata.h"
+
 using namespace Tray;
+using namespace PhalanxTray;
 
 std::vector<TrayMenu*> menu;
 TrayIcon tr = { "icon.png", "icon.ico", "Phalanx Tray App", menu };
@@ -12,14 +15,14 @@ std::function changeModel = [](TrayMenu* tm){ };
 
 int main()
 {
+	saveHandler.CreateAndLoadSave();
+
 	std::vector<serial::PortInfo> devices_found = serial::list_ports();
 	for (serial::PortInfo device : devices_found) 
 	{
 		comPorts.subMenu.push_back(new TrayMenu { device.port + ": " + device.description, true, false, false, [&](TrayMenu* tm){ 
 			for (TrayMenu* t : comPorts.subMenu)
-			{
 				t->isChecked = false;
-			}
 
 			tm->isChecked = true;
 

@@ -18,6 +18,9 @@ add_subdirectory(lib/tray)
 add_subdirectory(lib/serial)
 
 set(PHALANXTRAY_EXE_FILES
+	source/savedata.h
+	source/savedata.cpp
+	source/defines.h
 	source/main.cpp
 )
 

@@ -16,9 +16,16 @@ endif()
 
 add_subdirectory(lib/tray)
 add_subdirectory(lib/serial)
-add_executable(PhalanxTray
+
+set(PHALANXTRAY_EXE_FILES
 	source/main.cpp
 )
+
+if(WIN32)
+	add_executable(PhalanxTray ${PHALANXTRAY_EXE_FILES} data/appicon.rc)
+else()
+	add_executable(PhalanxTray ${PHALANXTRAY_EXE_FILES})
+endif()
 
 target_include_directories(PhalanxTray PUBLIC lib/tray)
 target_link_libraries(PhalanxTray PUBLIC tray::tray)

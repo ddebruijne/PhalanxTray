@@ -5,13 +5,31 @@
     "version": "0.2.0",
     "configurations": [
       {
-        "name": "Mac",
+        "name": "Mac: PhalanxTray",
         "type": "lldb",
         "request": "launch",
         "program": "${workspaceFolder}/build/bin/PhalanxTray",
         "args": ["arch -arm64"],
         "cwd": "${workspaceFolder}/build/bin",
-        "preLaunchTask": "build"
+        "preLaunchTask": "build_phalanxtray"
+      },
+      {
+        "name": "Mac: serial exammple",
+        "type": "lldb",
+        "request": "launch",
+        "program": "${workspaceFolder}/build/bin/serial_example",
+        "args": ["arch -arm64"],
+        "cwd": "${workspaceFolder}/build/bin",
+        "preLaunchTask": "build_serial_example"
+      },
+      {
+        "name": "Mac: tray exammple",
+        "type": "lldb",
+        "request": "launch",
+        "program": "${workspaceFolder}/build/bin/tray_example",
+        "args": ["arch -arm64"],
+        "cwd": "${workspaceFolder}/build/bin",
+        "preLaunchTask": "build_tray_example"
       },
       {
         "name": "Windows",

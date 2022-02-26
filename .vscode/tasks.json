@@ -4,9 +4,19 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "build",
+            "label": "build_phalanxtray",
             "type": "shell",
             "command": "cmake --build ${workspaceFolder}/build --config Debug --target PhalanxTray -j 10"
+        },
+        {
+            "label": "build_serial_example",
+            "type": "shell",
+            "command": "cmake --build ${workspaceFolder}/build --config Debug --target serial_example -j 10"
+        },
+        {
+            "label": "build_tray_example",
+            "type": "shell",
+            "command": "cmake --build ${workspaceFolder}/build --config Debug --target tray_example -j 10"
         }
     ]
 }

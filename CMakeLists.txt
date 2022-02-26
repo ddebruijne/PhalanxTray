@@ -15,12 +15,16 @@ else()
 endif()
 
 add_subdirectory(lib/tray)
+add_subdirectory(lib/serial)
 add_executable(PhalanxTray
 	source/main.cpp
 )
 
 target_include_directories(PhalanxTray PUBLIC lib/tray)
 target_link_libraries(PhalanxTray PUBLIC tray::tray)
+
+target_include_directories(PhalanxTray PUBLIC lib/serial/include)
+target_link_libraries(PhalanxTray PUBLIC serial)
 
 configure_file(${CMAKE_CURRENT_LIST_DIR}/data/icon.ico ${CMAKE_BINARY_DIR}/bin/icon.ico COPYONLY)
 configure_file(${CMAKE_CURRENT_LIST_DIR}/data/icon.png ${CMAKE_BINARY_DIR}/bin/icon.png COPYONLY)

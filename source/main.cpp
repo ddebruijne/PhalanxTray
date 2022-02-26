@@ -1,4 +1,5 @@
 #include "tray.hpp"
+#include "serial/serial.h"
 #include <iostream>
 
 using namespace Tray;
@@ -11,11 +12,10 @@ std::function changeModel = [](TrayMenu* tm){ };
 
 int main()
 {
-	TrayMenu comPorts = { "Serial Port", true, false, false, nullptr };
-	for(int i = 0; i < 5; i++) {
-		std::string comname = "COM";
-		comname += (char)(i + '0');
-		comPorts.subMenu.push_back(new TrayMenu { comname, true, false, false, [&](TrayMenu* tm){ 
+	std::vector<serial::PortInfo> devices_found = serial::list_ports();
+	for (serial::PortInfo device : devices_found) 
+	{
+		comPorts.subMenu.push_back(new TrayMenu { device.port, true, false, false, [&](TrayMenu* tm){ 
 			for (TrayMenu* t : comPorts.subMenu)
 			{
 				t->isChecked = false;

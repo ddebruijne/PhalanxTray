@@ -8,7 +8,7 @@ namespace PhalanxTray
 {
 	struct SaveData 
 	{
-		char serialport[32];
+		char serialport[100];
 		EModel model;
 	};
 

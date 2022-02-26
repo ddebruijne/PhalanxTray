@@ -15,7 +15,7 @@ int main()
 	std::vector<serial::PortInfo> devices_found = serial::list_ports();
 	for (serial::PortInfo device : devices_found) 
 	{
-		comPorts.subMenu.push_back(new TrayMenu { device.port, true, false, false, [&](TrayMenu* tm){ 
+		comPorts.subMenu.push_back(new TrayMenu { device.port + ": " + device.description, true, false, false, [&](TrayMenu* tm){ 
 			for (TrayMenu* t : comPorts.subMenu)
 			{
 				t->isChecked = false;

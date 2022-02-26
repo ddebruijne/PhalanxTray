@@ -4,6 +4,7 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+      // OSX
       {
         "name": "Mac: PhalanxTray",
         "type": "lldb",
@@ -31,14 +32,34 @@
         "cwd": "${workspaceFolder}/build/bin",
         "preLaunchTask": "build_tray_example"
       },
+
+      // WINDOWS
       {
-        "name": "Windows",
+        "name": "Windows: PhalanxTray",
         "type": "cppvsdbg",
         "request": "launch",
         "program": "${workspaceFolder}/build/bin/PhalanxTray.exe",
         "args": [],
         "cwd": "${workspaceFolder}/build/bin",
-        "preLaunchTask": "build"
+        "preLaunchTask": "build_phalanxtray"
+      },
+      {
+        "name": "Windows: serial example",
+        "type": "cppvsdbg",
+        "request": "launch",
+        "program": "${workspaceFolder}/build/bin/serial_example.exe",
+        "args": [],
+        "cwd": "${workspaceFolder}/build/bin",
+        "preLaunchTask": "build_serial_example"
+      },
+      {
+        "name": "Windows: tray example",
+        "type": "cppvsdbg",
+        "request": "launch",
+        "program": "${workspaceFolder}/build/bin/tray_example.exe",
+        "args": [],
+        "cwd": "${workspaceFolder}/build/bin",
+        "preLaunchTask": "build_tray_example"
       }
     ]
   }

@@ -1,6 +1,9 @@
 #include "tray.hpp"
 #include "serial/serial.h"
 #include <iostream>
+#include <thread>
+#include <ctime>
+#include <string>
 
 #include "savedata.h"
 
@@ -14,6 +17,18 @@ TrayMenu comPorts = { "Serial Port", true, false, false, nullptr };
 TrayMenu model;
 
 serial::Serial serialConn;
+std::thread* tickThread = nullptr;
+std::atomic<bool> ticking = false;
+
+void onTick()
+{
+    std::time_t t = std::time(0);   // get time now
+    std::tm* now = std::localtime(&t);
+	std::string toWrite = std::to_string(now->tm_hour) + std::to_string(now->tm_min) + std::to_string(now->tm_sec) + "\n";
+
+	serialConn.write(toWrite);
+	std::this_thread::sleep_for(std::chrono::milliseconds(100));
+}
 
 void attemptConnect()
 {
@@ -41,8 +56,11 @@ void attemptConnect()
 	if (!serialConn.isOpen())
 		return;
 
-	status.text = "Connected";	
+	status.text = "Connected to ";
+	status.text += std::string(sav->serialport);
 	serialConn.write("[MODE]serial\n");
+	ticking = true;
+	tickThread = new std::thread([](){ while(ticking) onTick(); });
 }
 
 void attemptDisconnect()
@@ -50,6 +68,9 @@ void attemptDisconnect()
 	if (!serialConn.isOpen())
 		return;
 
+	ticking = false;
+	tickThread->join();
+	delete tickThread;
 	serialConn.write("[MODE]normal\n");
 	serialConn.close();
 	status.text = "Disconnected";	
@@ -134,16 +155,19 @@ int main()
 		trayMaker.Exit();
 	} });
 
-
-	if(strlen(sav->serialport) > 0)
-		attemptConnect();
-
 	if (trayMaker.Initialize(&tr))
+	{
+		if(strlen(sav->serialport) > 0)
+			attemptConnect();
+
+		trayMaker.Update();
+
 		while(trayMaker.Loop(1));
+
+		attemptDisconnect();
+	}
 	else
 		std::cout << "initialization failed" << std::endl;
-
-	attemptDisconnect();
 
 	return 0;
 }

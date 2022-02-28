@@ -17,6 +17,8 @@ TrayMenu comPorts = { "Serial Port", true, false, false, nullptr };
 TrayMenu model;
 
 serial::Serial serialConn;
+serial::Timeout timeout(std::numeric_limits<uint32_t>::max(), 1000, 0, 1000, 0);
+
 std::thread* tickThread = nullptr;
 std::atomic<bool> ticking = false;
 
@@ -39,7 +41,7 @@ void attemptConnect()
 
 	serialConn.setPort(std::string(sav->serialport));
 	serialConn.setBaudrate(115200);
-	serialConn.setTimeout(serial::Timeout::simpleTimeout(1000));
+	serialConn.setTimeout(timeout);
 	try
 	{
 		serialConn.open();

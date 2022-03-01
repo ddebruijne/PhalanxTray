@@ -14,9 +14,6 @@ else()
 	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 endif()
 
-add_subdirectory(lib/tray)
-add_subdirectory(lib/serial)
-
 set(PHALANXTRAY_EXE_FILES
 	source/ContentMode/ContentModeTime.cpp
 	source/savedata.cpp
@@ -31,11 +28,18 @@ endif()
 
 target_include_directories(PhalanxTray PRIVATE include)
 
+configure_file(${CMAKE_CURRENT_LIST_DIR}/data/icon.ico ${CMAKE_BINARY_DIR}/bin/icon.ico COPYONLY)
+configure_file(${CMAKE_CURRENT_LIST_DIR}/data/icon.png ${CMAKE_BINARY_DIR}/bin/icon.png COPYONLY)
+
+add_subdirectory(lib/tray)
+add_subdirectory(lib/serial)
+add_subdirectory(lib/fmt)
+
 target_include_directories(PhalanxTray PUBLIC lib/tray)
 target_link_libraries(PhalanxTray PUBLIC tray::tray)
 
 target_include_directories(PhalanxTray PUBLIC lib/serial/include)
 target_link_libraries(PhalanxTray PUBLIC serial)
 
-configure_file(${CMAKE_CURRENT_LIST_DIR}/data/icon.ico ${CMAKE_BINARY_DIR}/bin/icon.ico COPYONLY)
-configure_file(${CMAKE_CURRENT_LIST_DIR}/data/icon.png ${CMAKE_BINARY_DIR}/bin/icon.png COPYONLY)
+target_include_directories(PhalanxTray PUBLIC lib/fmt/include)
+target_link_libraries(PhalanxTray PUBLIC fmt)

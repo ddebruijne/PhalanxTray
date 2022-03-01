@@ -12,7 +12,7 @@ namespace PhalanxTray
         const std::string contentModeName = "Unknown";
         long updateFrequency = 1000; // in ms
 
-        ContentModeBase(serial::Serial* inRef) { serialConn = inRef; }
+        ContentModeBase(serial::Serial* serialConnPtr) { serialConn = serialConnPtr; }
         virtual void OnActivate() = 0;
         virtual void OnDeactivate() = 0;
         virtual void OnTick() = 0;

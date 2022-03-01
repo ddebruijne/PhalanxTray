@@ -7,7 +7,7 @@ namespace PhalanxTray
     public:
         const std::string contentModeName = "Time";
 
-        ContentModeTime(serial::Serial* inRef) : ContentModeBase(inRef) { }
+        ContentModeTime(serial::Serial* serialConnPtr) : ContentModeBase(serialConnPtr) { }
         virtual void OnActivate();
         virtual void OnDeactivate();
         virtual void OnTick();

@@ -10,8 +10,7 @@
 using namespace Tray;
 using namespace PhalanxTray;
 
-std::vector<TrayMenu*> menu;
-TrayIcon tr = { "icon.png", "icon.ico", "Phalanx Tray App", menu };
+TrayIcon tr = { "icon.png", "icon.ico", "Phalanx Tray App" };
 TrayMenu status = { "Disconnected", false };
 TrayMenu comPorts = { "Serial Port", true, false, false, nullptr };
 TrayMenu model;

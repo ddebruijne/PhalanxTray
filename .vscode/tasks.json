@@ -6,17 +6,24 @@
         {
             "label": "build_phalanxtray",
             "type": "shell",
-            "command": "cmake --build ${workspaceFolder}/build --config Debug --target PhalanxTray -j 10"
+            "command": "cmake --build ${workspaceFolder}/build --config Debug --target PhalanxTray -j 10",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
         },
         {
             "label": "build_serial_example",
             "type": "shell",
-            "command": "cmake --build ${workspaceFolder}/build --config Debug --target serial_example -j 10"
+            "command": "cmake --build ${workspaceFolder}/build --config Debug --target serial_example -j 10",
+            "problemMatcher": [],
         },
         {
             "label": "build_tray_example",
             "type": "shell",
-            "command": "cmake --build ${workspaceFolder}/build --config Debug --target tray_example -j 10"
+            "command": "cmake --build ${workspaceFolder}/build --config Debug --target tray_example -j 10",
+            "problemMatcher": [],
         }
     ]
 }

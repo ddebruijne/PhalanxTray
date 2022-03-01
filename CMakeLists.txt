@@ -18,9 +18,7 @@ add_subdirectory(lib/tray)
 add_subdirectory(lib/serial)
 
 set(PHALANXTRAY_EXE_FILES
-	source/savedata.h
 	source/savedata.cpp
-	source/defines.h
 	source/main.cpp
 )
 
@@ -29,6 +27,8 @@ if(WIN32)
 else()
 	add_executable(PhalanxTray ${PHALANXTRAY_EXE_FILES})
 endif()
+
+target_include_directories(PhalanxTray PRIVATE include)
 
 target_include_directories(PhalanxTray PUBLIC lib/tray)
 target_link_libraries(PhalanxTray PUBLIC tray::tray)

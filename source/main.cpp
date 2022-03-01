@@ -2,10 +2,9 @@
 #include "serial/serial.h"
 #include <iostream>
 #include <thread>
-#include <ctime>
-#include <string>
 
 #include "savedata.h"
+#include "ContentMode/ContentModeTime.h"
 
 using namespace Tray;
 using namespace PhalanxTray;
@@ -21,14 +20,18 @@ serial::Timeout timeout(std::numeric_limits<uint32_t>::max(), 1000, 0, 1000, 0);
 std::thread* tickThread = nullptr;
 std::atomic<bool> ticking = false;
 
+std::shared_ptr<ContentModeBase> currentContentMode = nullptr;
+std::vector<std::shared_ptr<ContentModeBase>> allContentModes;
+
 void onTick()
 {
-    std::time_t t = std::time(0);   // get time now
-    std::tm* now = std::localtime(&t);
-	std::string toWrite = std::to_string(now->tm_hour) + std::to_string(now->tm_min) + std::to_string(now->tm_sec) + "\n";
-
-	serialConn.write(toWrite);
-	std::this_thread::sleep_for(std::chrono::milliseconds(100));
+	if (currentContentMode.get() != nullptr)
+	{
+		currentContentMode->OnTick();
+		std::this_thread::sleep_for(std::chrono::milliseconds(currentContentMode->updateFrequency));
+	}
+	else
+		std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 }
 
 void attemptConnect()
@@ -60,6 +63,7 @@ void attemptConnect()
 	status.text = "Connected to ";
 	status.text += std::string(sav->serialport);
 	serialConn.write("[MODE]serial\n");
+	currentContentMode->OnActivate();
 	ticking = true;
 	tickThread = new std::thread([](){ while(ticking) onTick(); });
 }
@@ -72,6 +76,7 @@ void attemptDisconnect()
 	ticking = false;
 	tickThread->join();
 	delete tickThread;
+	currentContentMode->OnDeactivate();
 	serialConn.write("[MODE]normal\n");
 	serialConn.close();
 	status.text = "Disconnected";	
@@ -155,6 +160,9 @@ int main()
 	tr.menu.push_back(new TrayMenu { "Exit", true, false, false, [&](TrayMenu* tm){ 
 		trayMaker.Exit();
 	} });
+
+	currentContentMode = std::make_shared<ContentModeTime>(&serialConn);
+	allContentModes.push_back(currentContentMode);
 
 	if (trayMaker.Initialize(&tr))
 	{

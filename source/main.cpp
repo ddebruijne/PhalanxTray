@@ -94,14 +94,14 @@ void buildComPortMenu()
 	std::vector<serial::PortInfo> devices_found = serial::list_ports();
 	for (serial::PortInfo device : devices_found) 
 	{
-		comPorts.subMenu.push_back(new TrayMenu { device.port + " ("+ device.description + ")", true, strcmp(sav->serialport, device.port.c_str()) == 0, false, [&, device](TrayMenu* tm){ 
+		comPorts.subMenu.push_back(new TrayMenu { device.port + " ("+ device.description + ")", true, strcmp(sav->serialport, device.port.c_str()) == 0, false, [=](TrayMenu* tm){ 
 			for (TrayMenu* t : comPorts.subMenu)
 				t->isChecked = false;
 
 			attemptDisconnect();
 
 			tm->isChecked = true;
-			strcpy(SaveHandler::GetInstance().GetCurrentSaveData()->serialport, device.port.c_str());
+			strcpy(sav->serialport, device.port.c_str());
 			SaveHandler::GetInstance().SaveCurrentData();
 
 			attemptConnect();
@@ -116,7 +116,7 @@ void buildModelMenu()
 	SaveData* sav = SaveHandler::GetInstance().GetCurrentSaveData();
 
 	model = { "Model", true, false, false, nullptr, { 
-		new TrayMenu { "Phalanx", true, sav->model == EModel::Phalanx, false, [&](TrayMenu* tm){
+		new TrayMenu { "Phalanx", true, sav->model == EModel::Phalanx, false, [=](TrayMenu* tm){
 			for (TrayMenu* t : model.subMenu)
 				t->isChecked = false;
 			
@@ -125,7 +125,7 @@ void buildModelMenu()
 			SaveHandler::GetInstance().SaveCurrentData();
 			trayMaker.Update();
 		}},
-		new TrayMenu { "Ameise", true, sav->model == EModel::Ameise, false, [&](TrayMenu* tm){
+		new TrayMenu { "Ameise", true, sav->model == EModel::Ameise, false, [=](TrayMenu* tm){
 			for (TrayMenu* t : model.subMenu)
 				t->isChecked = false;
 			
@@ -134,7 +134,7 @@ void buildModelMenu()
 			SaveHandler::GetInstance().SaveCurrentData();
 			trayMaker.Update();
 		}},
-		new TrayMenu { "Noctiluca", true, sav->model == EModel::Noctiluca, false, [&](TrayMenu* tm){
+		new TrayMenu { "Noctiluca", true, sav->model == EModel::Noctiluca, false, [=](TrayMenu* tm){
 			for (TrayMenu* t : model.subMenu)
 				t->isChecked = false;
 			
@@ -151,11 +151,10 @@ void buildSettingsMenu()
 	SaveData* sav = SaveHandler::GetInstance().GetCurrentSaveData();
 
 	settingsMenu = { "Settings", true, false, false, nullptr, {
-		new TrayMenu { "Show Seconds", true, sav->timeSettings.showSeconds, false, [&](TrayMenu* tm){
-			SaveData* savedata = SaveHandler::GetInstance().GetCurrentSaveData();
-			savedata->timeSettings.showSeconds = !savedata->timeSettings.showSeconds;
+		new TrayMenu { "Show Seconds", true, sav->timeSettings.showSeconds, false, [=](TrayMenu* tm){
+			sav->timeSettings.showSeconds = !sav->timeSettings.showSeconds;
 			
-			tm->isChecked = savedata->timeSettings.showSeconds;
+			tm->isChecked = sav->timeSettings.showSeconds;
 			SaveHandler::GetInstance().SaveCurrentData();
 			trayMaker.Update();
 		}},

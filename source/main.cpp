@@ -39,7 +39,7 @@ void attemptConnect()
 	if (serialConn.isOpen())
 		return;
 
-	SaveData* sav = saveHandler.GetCurrentSaveData();
+	SaveData* sav = SaveHandler::GetInstance().GetCurrentSaveData();
 
 	serialConn.setPort(std::string(sav->serialport));
 	serialConn.setBaudrate(115200);
@@ -89,7 +89,7 @@ void buildComPortMenu()
 
 	comPorts.subMenu.clear();
 
-	SaveData* sav = saveHandler.GetCurrentSaveData();
+	SaveData* sav = SaveHandler::GetInstance().GetCurrentSaveData();
 	std::vector<serial::PortInfo> devices_found = serial::list_ports();
 	for (serial::PortInfo device : devices_found) 
 	{
@@ -100,8 +100,8 @@ void buildComPortMenu()
 			attemptDisconnect();
 
 			tm->isChecked = true;
-			strcpy(saveHandler.GetCurrentSaveData()->serialport, device.port.c_str());
-			saveHandler.SaveCurrentData();
+			strcpy(SaveHandler::GetInstance().GetCurrentSaveData()->serialport, device.port.c_str());
+			SaveHandler::GetInstance().SaveCurrentData();
 
 			attemptConnect();
 			buildComPortMenu();
@@ -112,7 +112,7 @@ void buildComPortMenu()
 
 void buildModelMenu()
 {
-	SaveData* sav = saveHandler.GetCurrentSaveData();
+	SaveData* sav = SaveHandler::GetInstance().GetCurrentSaveData();
 
 	model = { "Model", true, false, false, nullptr, { 
 		new TrayMenu { "Phalanx", true, sav->model == EModel::Phalanx, false, [&](TrayMenu* tm){
@@ -121,7 +121,7 @@ void buildModelMenu()
 			
 			tm->isChecked = true;
 			sav->model = EModel::Phalanx;
-			saveHandler.SaveCurrentData();
+			SaveHandler::GetInstance().SaveCurrentData();
 			trayMaker.Update();
 		}},
 		new TrayMenu { "Ameise", true, sav->model == EModel::Ameise, false, [&](TrayMenu* tm){
@@ -130,7 +130,7 @@ void buildModelMenu()
 			
 			tm->isChecked = true;
 			sav->model = EModel::Ameise;
-			saveHandler.SaveCurrentData();
+			SaveHandler::GetInstance().SaveCurrentData();
 			trayMaker.Update();
 		}},
 		new TrayMenu { "Noctiluca", true, sav->model == EModel::Noctiluca, false, [&](TrayMenu* tm){
@@ -139,7 +139,7 @@ void buildModelMenu()
 			
 			tm->isChecked = true;
 			sav->model = EModel::Noctiluca;
-			saveHandler.SaveCurrentData();
+			SaveHandler::GetInstance().SaveCurrentData();
 			trayMaker.Update();
 		}},
 	}};
@@ -147,8 +147,8 @@ void buildModelMenu()
 
 int main()
 {
-	saveHandler.CreateAndLoadSave();
-	SaveData* sav = saveHandler.GetCurrentSaveData();
+	SaveHandler::GetInstance().CreateAndLoadSave();
+	SaveData* sav = SaveHandler::GetInstance().GetCurrentSaveData();
 
 	buildComPortMenu();
 	buildModelMenu();

@@ -5,8 +5,10 @@ using namespace PhalanxTray;
 
 bool SaveHandler::CreateAndLoadSave()
 {
-	if(!std::filesystem::exists(saveFilePath)) 
+	if(!std::filesystem::exists(saveFilePath))
+	{
 		return SaveCurrentData();
+	}
 
 	std::fstream saveFileHandle;
 	saveFileHandle.open(saveFilePath, std::ios::in | std::ios::binary);
@@ -19,7 +21,6 @@ bool SaveHandler::CreateAndLoadSave()
 
 bool SaveHandler::SaveCurrentData()
 {
-
 	std::fstream saveFileHandle;
 	saveFileHandle.open(saveFilePath, std::ios::out | std::ios::binary);
 	saveFileHandle.write((char*)&currentSaveData, sizeof(currentSaveData));

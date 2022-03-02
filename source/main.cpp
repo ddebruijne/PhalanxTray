@@ -13,6 +13,7 @@ TrayIcon tr = { "icon.png", "icon.ico", "Phalanx Tray App" };
 TrayMenu status = { "Disconnected", false };
 TrayMenu comPorts = { "Serial Port", true, false, false, nullptr };
 TrayMenu model;
+TrayMenu settingsMenu;
 
 serial::Serial serialConn;
 serial::Timeout timeout(std::numeric_limits<uint32_t>::max(), 1000, 0, 1000, 0);
@@ -145,6 +146,22 @@ void buildModelMenu()
 	}};
 }
 
+void buildSettingsMenu()
+{
+	SaveData* sav = SaveHandler::GetInstance().GetCurrentSaveData();
+
+	settingsMenu = { "Settings", true, false, false, nullptr, {
+		new TrayMenu { "Show Seconds", true, sav->timeSettings.showSeconds, false, [&](TrayMenu* tm){
+			SaveData* savedata = SaveHandler::GetInstance().GetCurrentSaveData();
+			savedata->timeSettings.showSeconds = !savedata->timeSettings.showSeconds;
+			
+			tm->isChecked = savedata->timeSettings.showSeconds;
+			SaveHandler::GetInstance().SaveCurrentData();
+			trayMaker.Update();
+		}},
+	}};
+}
+
 int main()
 {
 	SaveHandler::GetInstance().CreateAndLoadSave();
@@ -152,11 +169,13 @@ int main()
 
 	buildComPortMenu();
 	buildModelMenu();
+	buildSettingsMenu();
 
 	tr.menu.push_back(&status);
 	tr.menu.push_back(new TrayMenu { "-" });
 	tr.menu.push_back(&comPorts);
 	tr.menu.push_back(&model);
+	tr.menu.push_back(&settingsMenu);
 	tr.menu.push_back(new TrayMenu { "Exit", true, false, false, [&](TrayMenu* tm){ 
 		trayMaker.Exit();
 	} });

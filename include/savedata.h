@@ -6,10 +6,16 @@
 
 namespace PhalanxTray 
 {
+	struct SaveData_TimeSettings
+	{
+		bool showSeconds = false;
+	};
+
 	struct SaveData 
 	{
 		char serialport[100];
 		EModel model;
+		SaveData_TimeSettings timeSettings;
 	};
 
 	class SaveHandler

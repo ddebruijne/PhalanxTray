@@ -21,9 +21,12 @@ void ContentModeTime::OnTick()
     std::string toWrite;
     
     if (sav->timeSettings.showSeconds)
-        toWrite = fmt::format("{:02}{:02}{:02}\n", now->tm_hour, now->tm_min, now->tm_sec);
+        toWrite = fmt::format("{:02}{:02}{:02}", now->tm_hour, now->tm_min, now->tm_sec);
     else
-        toWrite = fmt::format("{:02}{:02}\n", now->tm_hour, now->tm_min);
+        toWrite = fmt::format("{:02}{:02}", now->tm_hour, now->tm_min);
 
+    toWrite = fmt::format("{:^{}}", toWrite, GetAmountTubes(sav->model));
+    
+    toWrite += '\n';
 	serialConn->write(toWrite);
 }

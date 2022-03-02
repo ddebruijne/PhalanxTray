@@ -8,3 +8,7 @@ url=https://github.com/danskidb/Tray.git
 	path = lib/fmt
 	url = https://github.com/fmtlib/fmt.git
 	branch = master
+[submodule "lib/asio"]
+	path = lib/asio
+	url = https://github.com/OlivierLDff/asio.cmake.git
+	branch = main

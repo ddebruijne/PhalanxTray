@@ -34,6 +34,7 @@ configure_file(${CMAKE_CURRENT_LIST_DIR}/data/icon.png ${CMAKE_BINARY_DIR}/bin/i
 add_subdirectory(lib/tray)
 add_subdirectory(lib/serial)
 add_subdirectory(lib/fmt)
+add_subdirectory(lib/asio)
 
 target_include_directories(PhalanxTray PUBLIC lib/tray)
 target_link_libraries(PhalanxTray PUBLIC tray::tray)
@@ -43,3 +44,5 @@ target_link_libraries(PhalanxTray PUBLIC serial)
 
 target_include_directories(PhalanxTray PUBLIC lib/fmt/include)
 target_link_libraries(PhalanxTray PUBLIC fmt)
+
+target_link_libraries(PhalanxTray PUBLIC asio::asio)

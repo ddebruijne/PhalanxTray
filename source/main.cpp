@@ -1,5 +1,6 @@
 #include "tray.hpp"
 #include "serial/serial.h"
+#include "asio.hpp"
 #include <iostream>
 #include <thread>
 
@@ -24,15 +25,40 @@ std::atomic<bool> ticking = false;
 std::shared_ptr<ContentModeBase> currentContentMode = nullptr;
 std::vector<std::shared_ptr<ContentModeBase>> allContentModes;
 
+asio::io_context io_context;
+asio::ip::udp::endpoint udpReceiver(asio::ip::address_v4::any(), 11001);
+//asio::ip::udp::endpoint sendr(asio::ip::address_v4::broadcast(), 11001);
+asio::ip::udp::socket udpSocket(io_context, udpReceiver);
+
 void onTick()
 {
+	if (udpSocket.available())
+	{
+		char buffer[65536];
+		asio::ip::udp::endpoint sender;
+		std::size_t bytes_transferred = udpSocket.receive_from(asio::buffer(buffer), sender);
+		std::string result(buffer, bytes_transferred);
+		std::cout << result << std::endl;
+	}
+
+	// try
+	// {
+	// 	udpSocket.send_to(asio::buffer("ayy", 3), sendr);
+	// }
+	// catch (asio::system_error e)
+	// {
+	// 	std::cout << e.what() << std::endl;
+	// }
+
 	if (currentContentMode.get() != nullptr)
 	{
 		currentContentMode->OnTick();
 		std::this_thread::sleep_for(std::chrono::milliseconds(currentContentMode->updateFrequency));
 	}
 	else
+	{
 		std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+	}
 }
 
 void attemptConnect()
@@ -181,6 +207,9 @@ int main()
 
 	currentContentMode = std::make_shared<ContentModeTime>(&serialConn);
 	allContentModes.push_back(currentContentMode);
+
+	// udpSocket.set_option(asio::ip::udp::socket::reuse_address(true));
+  	// udpSocket.set_option(asio::socket_base::broadcast(true));
 
 	if (trayMaker.Initialize(&tr))
 	{

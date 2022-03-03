@@ -96,6 +96,20 @@
 		"any": "cpp",
 		"set": "cpp",
 		"typeindex": "cpp",
-		"variant": "cpp"
+		"variant": "cpp",
+		"cinttypes": "cpp",
+		"codecvt": "cpp",
+		"condition_variable": "cpp",
+		"coroutine": "cpp",
+		"csignal": "cpp",
+		"future": "cpp",
+		"numeric": "cpp",
+		"queue": "cpp",
+		"random": "cpp",
+		"shared_mutex": "cpp",
+		"source_location": "cpp",
+		"strstream": "cpp",
+		"*.ipp": "cpp",
+		"unordered_set": "cpp"
 	}
 }

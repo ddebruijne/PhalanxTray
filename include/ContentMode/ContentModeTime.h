@@ -1,3 +1,6 @@
+#ifndef CONTENTMODETIME_H
+#define CONTENTMODETIME_H
+
 #include "ContentModeBase.h"
 
 namespace PhalanxTray
@@ -13,3 +16,5 @@ namespace PhalanxTray
         virtual void OnTick();
     };
 }
+
+#endif //CONTENTMODETIME_H

@@ -1,3 +1,6 @@
+#ifndef CONTENTMODEBASE_H
+#define CONTENTMODEBASE_H
+
 #include "../defines.h"
 #include "serial/serial.h"
 
@@ -18,3 +21,5 @@ namespace PhalanxTray
         virtual void OnTick() = 0;
     };
 }
+
+#endif //CONTENTMODEBASE_H

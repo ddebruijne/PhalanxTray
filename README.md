@@ -1,8 +1,29 @@
 # PhalanxTray
 Cross-Platform tray application for interfacing with Phalanx-based VFD and Nixie devices.
 
-## To Do
-- improve resource usage: right now we simply update every 100ms but that keeps the CPU active and can thus drain battery.
+## Commands
+Are formatted like
+`COMMAND|parameter|parameter|parameter`
+
+The max length for a command is 65536 characters.
+
+### HELLO
+Starts a new ContentMode:
+```
+HELLO|FinalFantasyXIV
+```
+
+### KEEPALIVE
+Has to be called every X seconds by the content mode to make sure the content mode stays alive.
+```
+KEEPALIVE|FinalFantasyXIV
+```
+
+### SENDDATA
+Sends new text to be displayed on the attached serial device 
+```
+SENDDATA|FinalFantasyXIV|TextToBeDisplayed
+```
 
 ## Bookmarks
 - http://www.cpp-home.com/tutorials/225_1.htm

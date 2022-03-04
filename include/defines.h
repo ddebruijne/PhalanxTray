@@ -4,27 +4,47 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
+#include <chrono>
 
 namespace PhalanxTray
 {
 	static char saveFileName[] = "config.sav";
+	static int contentModeTimeout = 10000; // 10s in ms
 
-	enum EModel : uint8_t {
+	enum EModel : uint8_t
+	{
 		Phalanx,	// 6 tubes, 8 segments
 		Ameise,		// 8 tubes, 20 segments
 		Noctiluca	// 4 tubes, 7 segments
 	};
 
-	enum ECommand : uint8_t {
+	enum ECommand : uint8_t
+	{
 		Hello,
 		Keepalive,
 		SendData,
 	};
 
-	static std::unordered_map<std::string, ECommand> commandMap = {
+	enum EContentModeId : uint8_t
+	{
+		Unknown,
+		Time,
+		FinalFantasyXIV,
+	};
+
+	static std::unordered_map<std::string, ECommand> commandMap =
+	{
 		{ std::string("HELLO"), ECommand::Hello },
 		{ std::string("KEEPALIVE"), ECommand::Keepalive },
 		{ std::string("SENDDATA"), ECommand::SendData }
+	};
+
+	static std::unordered_map<std::string, EContentModeId> contentModeMap =
+	{
+		{ std::string("Base"), EContentModeId::Unknown },
+		{ std::string("Unknown"), EContentModeId::Unknown },
+		{ std::string("Time"), EContentModeId::Time },
+		{ std::string("FinalFantasyXIV"), EContentModeId::FinalFantasyXIV }
 	};
 
 	static int GetAmountTubes(EModel model)
@@ -54,6 +74,13 @@ namespace PhalanxTray
 			temp += x[i];
 		}
 		return splitted;
+	}
+
+	static long GetSystemTimeMillis()
+	{
+		std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
+		auto duration = now.time_since_epoch();
+		return (long)std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
 	}
 };
 

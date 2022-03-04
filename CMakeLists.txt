@@ -15,6 +15,8 @@ else()
 endif()
 
 set(PHALANXTRAY_EXE_FILES
+	source/ContentMode/ContentModeBase.cpp
+	source/ContentMode/ContentModeFFXIV.cpp
 	source/ContentMode/ContentModeTime.cpp
 	source/savedata.cpp
 	source/main.cpp

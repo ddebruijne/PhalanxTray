@@ -4,6 +4,12 @@
 
 using namespace PhalanxTray;
 
+ContentModeTime::ContentModeTime(serial::Serial* serialConnPtr) : 
+    ContentModeBase(EContentModeId::Time, "Time", false, serialConnPtr)
+{
+
+}
+
 void ContentModeTime::OnActivate()
 {
 }

@@ -6,6 +6,7 @@
 
 #include "savedata.h"
 #include "ContentMode/ContentModeTime.h"
+#include "ContentMode/ContentModeFFXIV.h"
 
 using namespace Tray;
 using namespace PhalanxTray;
@@ -30,8 +31,37 @@ asio::ip::udp::endpoint udpReceiver(asio::ip::address_v4::any(), 11001);
 asio::ip::udp::endpoint udpSender(asio::ip::address_v4::loopback(), 11001);
 asio::ip::udp::socket udpSocket(io_context, udpReceiver);
 
+void createContentMode(EContentModeId contentModeId)
+{
+	//TODO check if content mode already exists & block
+
+	std::shared_ptr<ContentModeBase> newContentMode;
+
+	switch(contentModeId) 
+	{
+		case EContentModeId::Time:
+			newContentMode = std::make_shared<ContentModeTime>(&serialConn);
+			break;
+		case EContentModeId::FinalFantasyXIV:
+			newContentMode = std::make_shared<ContentModeFFXIV>(&serialConn);
+			break;
+		default:
+			std::cout << "Could not create content mode for " << contentModeId << std::endl;
+			break;
+	}
+
+	if (currentContentMode != nullptr)
+		currentContentMode->OnDeactivate();
+
+	allContentModes.push_back(newContentMode);
+	currentContentMode = newContentMode;
+	currentContentMode->OnActivate();
+}
+
 void onTick()
 {
+	long systemTimeMillis = GetSystemTimeMillis();
+
 	// Handle incoming commands
 	if (udpSocket.available())
 	{
@@ -46,18 +76,61 @@ void onTick()
 		ECommand command = commandMap[commandArray[0]];
 		commandArray.erase(commandArray.begin());
 
-		switch(command)
+		switch (command)
 		{
 			case ECommand::Hello:
+			{
+				EContentModeId contentModeId = contentModeMap[commandArray[0]];
+				createContentMode(contentModeId);
 				break;
+			}
 			case ECommand::Keepalive:
+			{
+				EContentModeId contentModeId = contentModeMap[commandArray[0]];
+				
+				for (std::shared_ptr<ContentModeBase> contentModePtr : allContentModes)
+					if (contentModePtr->contentModeId == contentModeId)
+					{
+						contentModePtr->lastKeepaliveTimestamp = systemTimeMillis;
+						break;
+					}
+
 				break;
+			}
 			case ECommand::SendData:
+			{
+				EContentModeId contentModeId = contentModeMap[commandArray[0]];
+				commandArray.erase(commandArray.begin());
+
+				for (std::shared_ptr<ContentModeBase> contentModePtr : allContentModes)
+					if (contentModePtr->contentModeId == contentModeId)
+					{
+						contentModePtr->OnDataReceived(commandArray);
+						break;
+					}
+
 				break;
+			}
 			default:
+				std::cout << "unable to determine command" << std::endl;
 				break;
 		}
 	}
+
+	// Check if any keepalives expired
+	if(!allContentModes.empty())
+		for (size_t i = allContentModes.size()-1; i == 0; i--)
+		{
+			std::shared_ptr<ContentModeBase> contentModePtr = allContentModes[i];
+			if (!contentModePtr->usesKeepalive)
+				continue;
+
+			if ((systemTimeMillis - contentModePtr->lastKeepaliveTimestamp) > 10000)
+			{
+				std::cout << contentModePtr->contentModeName << std::endl;
+				//TODO kill content mode
+			}
+		}
 
 	// Update the current content mode.
 	if (currentContentMode.get() != nullptr)
@@ -66,9 +139,7 @@ void onTick()
 		std::this_thread::sleep_for(std::chrono::milliseconds(currentContentMode->updateFrequency));
 	}
 	else
-	{
 		std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-	}
 }
 
 void attemptConnect()

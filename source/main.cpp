@@ -28,7 +28,7 @@ std::atomic<bool> ticking = false;
 struct ContentSwitchInformation { EContentModeId newContentMode = EContentModeId::Time; bool wantsSwitch = false; };
 std::atomic<ContentSwitchInformation> contentSwitchInformation;
 std::shared_ptr<ContentModeBase> currentContentMode = nullptr;
-std::vector<std::shared_ptr<ContentModeBase>> allContentModes;	//TODO rework this to map, then we don't have to loop for getting the content mode, and only one of each can be active anyways.
+std::vector<std::shared_ptr<ContentModeBase>> allContentModes;
 
 asio::io_context io_context;
 asio::ip::udp::endpoint udpReceiver(asio::ip::address_v4::any(), 11001);

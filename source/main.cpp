@@ -16,13 +16,17 @@ TrayMenu status = { "Disconnected", false };
 TrayMenu comPorts = { "Serial Port", true, false, false, nullptr };
 TrayMenu model;
 TrayMenu settingsMenu;
+TrayMenu contentModeMenu = { "Content mode", true, false, false, nullptr };
 
 serial::Serial serialConn;
 serial::Timeout timeout(std::numeric_limits<uint32_t>::max(), 1000, 0, 1000, 0);
+std::string lastKnownDisplayText = "";
 
 std::thread* tickThread = nullptr;
 std::atomic<bool> ticking = false;
 
+struct ContentSwitchInformation { EContentModeId newContentMode = EContentModeId::Time; bool wantsSwitch = false; };
+std::atomic<ContentSwitchInformation> contentSwitchInformation;
 std::shared_ptr<ContentModeBase> currentContentMode = nullptr;
 std::vector<std::shared_ptr<ContentModeBase>> allContentModes;	//TODO rework this to map, then we don't have to loop for getting the content mode, and only one of each can be active anyways.
 
@@ -31,12 +35,14 @@ asio::ip::udp::endpoint udpReceiver(asio::ip::address_v4::any(), 11001);
 asio::ip::udp::endpoint udpSender(asio::ip::address_v4::loopback(), 11001);
 asio::ip::udp::socket udpSocket(io_context, udpReceiver);
 
+void buildContentModeMenu();	// TODO restructure main so we dont have to do forward declarations.
+
 void createContentMode(EContentModeId contentModeId)
 {
 	// check if content mode already exists & block
 	for (std::shared_ptr<ContentModeBase> contentModePtr : allContentModes)
-	if (contentModePtr->contentModeId == contentModeId)
-		return;
+		if (contentModePtr->contentModeId == contentModeId)
+			return;
 
 	std::shared_ptr<ContentModeBase> newContentMode;
 	switch(contentModeId) 
@@ -60,21 +66,45 @@ void createContentMode(EContentModeId contentModeId)
 
 	if (serialConn.isOpen())
 		currentContentMode->OnActivate();
+
+	buildContentModeMenu();
+	trayMaker.Update();
 }
 
 void onTick()
 {
 	long systemTimeMillis = GetSystemTimeMillis();
 
+	ContentSwitchInformation switchInfo = contentSwitchInformation.load();
+	if (switchInfo.wantsSwitch)
+	{
+		for (std::shared_ptr<ContentModeBase> contentModePtr : allContentModes)
+			if (switchInfo.newContentMode == contentModePtr->contentModeId)
+			{
+				if (currentContentMode != nullptr && serialConn.isOpen())
+					currentContentMode->OnDeactivate();
+
+				currentContentMode = contentModePtr;
+
+				if (serialConn.isOpen())
+					currentContentMode->OnActivate();
+
+				buildContentModeMenu();
+				trayMaker.Update();
+			}
+
+		switchInfo.wantsSwitch = false;
+		contentSwitchInformation = switchInfo;
+	}
+
 	// Handle incoming commands
 	while (udpSocket.available())
 	{
+		//TODO handle for invalid data packets.
 		char buffer[65536];
 		asio::ip::udp::endpoint sender;
 		std::size_t bytes_transferred = udpSocket.receive_from(asio::buffer(buffer), sender);
 		std::string result(buffer, bytes_transferred);
-
-		std::cout << result << std::endl;
 
 		std::vector commandArray = SplitString(result, '|');
 		ECommand command = commandMap[commandArray[0]];
@@ -82,6 +112,7 @@ void onTick()
 
 		switch (command)
 		{
+			//TODO: Create Goodbye command
 			case ECommand::Hello:
 			{
 				EContentModeId contentModeId = contentModeMap[commandArray[0]];
@@ -92,12 +123,17 @@ void onTick()
 			{
 				EContentModeId contentModeId = contentModeMap[commandArray[0]];
 				
+				bool found = false;
 				for (std::shared_ptr<ContentModeBase> contentModePtr : allContentModes)
 					if (contentModePtr->contentModeId == contentModeId)
 					{
 						contentModePtr->lastKeepaliveTimestamp = systemTimeMillis;
+						found = true;
 						break;
 					}
+
+				if (!found)
+					createContentMode(contentModeId);
 
 				break;
 			}
@@ -144,14 +180,23 @@ void onTick()
 					if (serialConn.isOpen())
 						currentContentMode->OnActivate();
 				}
+
+				buildContentModeMenu();
+				trayMaker.Update();
 			}
 		}
 
 	// Update the current content mode.
 	long updateFrequency = 2000;
-	if (currentContentMode.get() != nullptr)
+	if (currentContentMode != nullptr)
 	{
 		currentContentMode->OnTick();
+		if(lastKnownDisplayText != currentContentMode->currentDisplayText)
+		{
+			serialConn.write(currentContentMode->currentDisplayText + "\n");
+			lastKnownDisplayText = currentContentMode->currentDisplayText;
+		}
+
 		updateFrequency = currentContentMode->updateFrequency;
 	}
 	
@@ -284,26 +329,48 @@ void buildSettingsMenu()
 	}};
 }
 
+void buildContentModeMenu()
+{
+	for (TrayMenu* t : contentModeMenu.subMenu)
+		delete t;
+
+	contentModeMenu.subMenu.clear();
+
+	for (std::shared_ptr<ContentModeBase> contentModePtr : allContentModes)
+	{
+		EContentModeId contentModeId = contentModePtr->contentModeId; // redefine for copy
+		contentModeMenu.subMenu.push_back(new TrayMenu { contentModePtr->contentModeName, true, contentModePtr == currentContentMode, false, [=](TrayMenu* tm){ 
+			if(!serialConn.isOpen())
+				return;
+
+			ContentSwitchInformation toSet = { contentModeId, true };
+			contentSwitchInformation = toSet;
+		} });
+	}
+}
+
 int main()
 {
 	SaveHandler::GetInstance().CreateAndLoadSave();
 	SaveData* sav = SaveHandler::GetInstance().GetCurrentSaveData();
 
+	currentContentMode = std::make_shared<ContentModeTime>(&serialConn);
+	allContentModes.push_back(currentContentMode);
+
 	buildComPortMenu();
 	buildModelMenu();
 	buildSettingsMenu();
+	buildContentModeMenu();
 
 	tr.menu.push_back(&status);
 	tr.menu.push_back(new TrayMenu { "-" });
 	tr.menu.push_back(&comPorts);
 	tr.menu.push_back(&model);
 	tr.menu.push_back(&settingsMenu);
+	tr.menu.push_back(&contentModeMenu);
 	tr.menu.push_back(new TrayMenu { "Exit", true, false, false, [&](TrayMenu* tm){ 
 		trayMaker.Exit();
 	} });
-
-	currentContentMode = std::make_shared<ContentModeTime>(&serialConn);
-	allContentModes.push_back(currentContentMode);
 
 	if (trayMaker.Initialize(&tr))
 	{

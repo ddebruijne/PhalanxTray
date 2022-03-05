@@ -18,6 +18,7 @@ namespace PhalanxTray
 
         long updateFrequency; // in ms
         long lastKeepaliveTimestamp;
+        std::string currentDisplayText;
 
     protected:
         ContentModeBase(EContentModeId contentModeId, std::string contentModeName, bool usesKeepAlive, serial::Serial* serialConnPtr);

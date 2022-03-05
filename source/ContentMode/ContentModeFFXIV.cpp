@@ -11,7 +11,7 @@ ContentModeFFXIV::ContentModeFFXIV(serial::Serial* serialConnPtr) :
 
 void ContentModeFFXIV::OnActivate()
 {
-    serialConn->write(std::string("ff\n"));
+    currentDisplayText = "ff";
 }
 
 void ContentModeFFXIV::OnDeactivate()
@@ -24,5 +24,5 @@ void ContentModeFFXIV::OnTick()
 
 void ContentModeFFXIV::OnDataReceived(std::vector<std::string>& data)
 {
-    serialConn->write(data[0] + "\n");
+    currentDisplayText = data[0];
 }

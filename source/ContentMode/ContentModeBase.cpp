@@ -8,6 +8,7 @@ ContentModeBase::ContentModeBase(EContentModeId contentModeId, std::string conte
     usesKeepalive(usesKeepAlive),
     serialConn(serialConnPtr),
     updateFrequency(1000),
-    lastKeepaliveTimestamp(GetSystemTimeMillis())
+    lastKeepaliveTimestamp(GetSystemTimeMillis()),
+    currentDisplayText("")
 {
 }

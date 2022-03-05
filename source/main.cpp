@@ -24,7 +24,7 @@ std::thread* tickThread = nullptr;
 std::atomic<bool> ticking = false;
 
 std::shared_ptr<ContentModeBase> currentContentMode = nullptr;
-std::vector<std::shared_ptr<ContentModeBase>> allContentModes;
+std::vector<std::shared_ptr<ContentModeBase>> allContentModes;	//TODO rework this to map, then we don't have to loop for getting the content mode, and only one of each can be active anyways.
 
 asio::io_context io_context;
 asio::ip::udp::endpoint udpReceiver(asio::ip::address_v4::any(), 11001);
@@ -33,10 +33,12 @@ asio::ip::udp::socket udpSocket(io_context, udpReceiver);
 
 void createContentMode(EContentModeId contentModeId)
 {
-	//TODO check if content mode already exists & block
+	// check if content mode already exists & block
+	for (std::shared_ptr<ContentModeBase> contentModePtr : allContentModes)
+	if (contentModePtr->contentModeId == contentModeId)
+		return;
 
 	std::shared_ptr<ContentModeBase> newContentMode;
-
 	switch(contentModeId) 
 	{
 		case EContentModeId::Time:
@@ -50,12 +52,14 @@ void createContentMode(EContentModeId contentModeId)
 			break;
 	}
 
-	if (currentContentMode != nullptr)
+	if (currentContentMode != nullptr && serialConn.isOpen())
 		currentContentMode->OnDeactivate();
 
 	allContentModes.push_back(newContentMode);
 	currentContentMode = newContentMode;
-	currentContentMode->OnActivate();
+
+	if (serialConn.isOpen())
+		currentContentMode->OnActivate();
 }
 
 void onTick()
@@ -63,7 +67,7 @@ void onTick()
 	long systemTimeMillis = GetSystemTimeMillis();
 
 	// Handle incoming commands
-	if (udpSocket.available())
+	while (udpSocket.available())
 	{
 		char buffer[65536];
 		asio::ip::udp::endpoint sender;
@@ -119,7 +123,7 @@ void onTick()
 
 	// Check if any keepalives expired
 	if(!allContentModes.empty())
-		for (size_t i = allContentModes.size()-1; i == 0; i--)
+		for (int i = allContentModes.size()-1; i >= 0; i--)
 		{
 			std::shared_ptr<ContentModeBase> contentModePtr = allContentModes[i];
 			if (!contentModePtr->usesKeepalive)
@@ -127,19 +131,31 @@ void onTick()
 
 			if ((systemTimeMillis - contentModePtr->lastKeepaliveTimestamp) > 10000)
 			{
-				std::cout << contentModePtr->contentModeName << std::endl;
-				//TODO kill content mode
+				// Destroy content mode.
+				std::cout << "killing " << contentModePtr->contentModeName << std::endl;
+				allContentModes.erase(allContentModes.begin()+i);
+				if (contentModePtr == currentContentMode) 
+				{
+					if (serialConn.isOpen())
+						currentContentMode->OnDeactivate();
+					
+					currentContentMode = allContentModes.front();
+
+					if (serialConn.isOpen())
+						currentContentMode->OnActivate();
+				}
 			}
 		}
 
 	// Update the current content mode.
+	long updateFrequency = 2000;
 	if (currentContentMode.get() != nullptr)
 	{
 		currentContentMode->OnTick();
-		std::this_thread::sleep_for(std::chrono::milliseconds(currentContentMode->updateFrequency));
+		updateFrequency = currentContentMode->updateFrequency;
 	}
-	else
-		std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+	
+	std::this_thread::sleep_for(std::chrono::milliseconds(updateFrequency));
 }
 
 void attemptConnect()

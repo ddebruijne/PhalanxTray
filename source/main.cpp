@@ -326,6 +326,13 @@ void buildSettingsMenu()
 			SaveHandler::GetInstance().SaveCurrentData();
 			trayMaker.Update();
 		}},
+		new TrayMenu { "Show day/month at half minute", true, sav->timeSettings.showDate, false, [=](TrayMenu* tm){
+			sav->timeSettings.showDate = !sav->timeSettings.showDate;
+			
+			tm->isChecked = sav->timeSettings.showDate;
+			SaveHandler::GetInstance().SaveCurrentData();
+			trayMaker.Update();
+		}},
 	}};
 }
 

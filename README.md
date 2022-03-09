@@ -34,7 +34,6 @@ SENDDATA|ContentModeId|TextToBeDisplayed
 - Add Goodbye command
 - Figure out a way to handle dots.
 - Improve time display mode by scrolling across the width of the display if not using full width.
-- Display date between 28-32s in a minute. (option)
 - Add more content modes!
 - Handle invalid packets
 - Clean up main.cpp

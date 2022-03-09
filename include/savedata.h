@@ -9,6 +9,7 @@ namespace PhalanxTray
 	struct SaveData_TimeSettings
 	{
 		bool showSeconds = false;
+		bool showDate = true;
 	};
 
 	struct SaveData 

@@ -2,6 +2,7 @@
 #define DEFINES_H
 
 #include <vector>
+#include <array>
 #include <string>
 #include <unordered_map>
 #include <chrono>
@@ -45,6 +46,22 @@ namespace PhalanxTray
 		{ std::string("Unknown"), EContentModeId::Unknown },
 		{ std::string("Time"), EContentModeId::Time },
 		{ std::string("FinalFantasyXIV"), EContentModeId::FinalFantasyXIV }
+	};
+
+	static std::array<std::string, 12> monthMap = 
+	{
+		std::string("JAN"),
+		std::string("FEB"),
+		std::string("MAR"),
+		std::string("APR"),
+		std::string("MAY"),
+		std::string("JUN"),
+		std::string("JUL"),
+		std::string("AUG"),
+		std::string("SEP"),
+		std::string("OCT"),
+		std::string("NOV"),
+		std::string("DEC")
 	};
 
 	static int GetAmountTubes(EModel model)

@@ -132,7 +132,6 @@ void onTick()
 
 		switch (command)
 		{
-			//TODO: Create Goodbye command
 			case ECommand::Hello:
 			{
 				createContentMode(contentModeId);

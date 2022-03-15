@@ -4,7 +4,7 @@ Receives UDP packets on port 11001
 
 ## UDP Packets
 Are formatted like
-`COMMAND|parameter|parameter|parameter`
+`COMMAND|ContentModeId|parameter|parameter`
 
 The max length for a packet is 65536 characters.
 
@@ -26,17 +26,21 @@ Sends new text to be displayed on the attached serial device
 SENDDATA|ContentModeId|TextToBeDisplayed
 ```
 
+### GOODBYE
+Sends new text to be displayed on the attached serial device 
+```
+GOODBYE|ContentModeId
+```
+
 ## Content Modes
 - Time: Self-contained, default content mode displaying the current time
 - FinalFantasyXIV: Simple forwarder of SendData to the serial device, [danskidb/Dalamud-Klonk](https://github.com/danskidb/Dalamud-Klonk) is the sender plugin
 
 ## To Do
-- Add Goodbye command
 - Figure out a way to handle dots.
 - Improve time display mode by scrolling across the width of the display if not using full width.
 - Add more content modes!
 - Handle invalid packets
-- Clean up main.cpp
 
 ## Bookmarks
 - http://www.cpp-home.com/tutorials/225_1.htm

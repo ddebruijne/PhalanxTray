@@ -7,6 +7,7 @@
 #include "savedata.h"
 #include "ContentMode/ContentModeTime.h"
 #include "ContentMode/ContentModeFFXIV.h"
+#include "loguru.hpp"
 
 using namespace Tray;
 using namespace PhalanxTray;
@@ -54,7 +55,7 @@ void createContentMode(EContentModeId contentModeId)
 			newContentMode = std::make_shared<ContentModeFFXIV>(&serialConn);
 			break;
 		default:
-			std::cout << "Could not create content mode for " << contentModeId << std::endl;
+			LOG_F(ERROR, "Could not create content mode");
 			break;
 	}
 
@@ -152,7 +153,7 @@ void onTick()
 				break;
 			}
 			default:
-				std::cout << "unable to determine command" << std::endl;
+				LOG_F(ERROR, "unable to determine command");
 				break;
 		}
 	}
@@ -168,7 +169,7 @@ void onTick()
 			if ((systemTimeMillis - contentModePtr->lastKeepaliveTimestamp) > 10000)
 			{
 				// Destroy content mode.
-				std::cout << "killing " << contentModePtr->contentModeName << std::endl;
+				LOG_F(INFO, "Killing %s", contentModePtr->contentModeName);
 				allContentModes.erase(allContentModes.begin()+i);
 				if (contentModePtr == currentContentMode) 
 				{
@@ -234,7 +235,10 @@ void attemptConnect()
 	serialConn.write("[MODE]serial\n");
 	currentContentMode->OnActivate();
 	ticking = true;
-	tickThread = new std::thread([](){ while(ticking) onTick(); });
+	tickThread = new std::thread([](){ 
+		loguru::set_thread_name("Update Thread");
+		while(ticking) onTick(); 
+	});
 }
 
 void attemptDisconnect()
@@ -356,8 +360,11 @@ void buildContentModeMenu()
 	}
 }
 
-int main()
+int main(int argc, char *argv[])
 {
+	loguru::init(argc, argv);
+	loguru::add_file("PhalanxTray.log", loguru::Truncate, loguru::Verbosity_MAX);
+
 	SaveHandler::GetInstance().CreateAndLoadSave();
 	SaveData* sav = SaveHandler::GetInstance().GetCurrentSaveData();
 
@@ -391,7 +398,7 @@ int main()
 		attemptDisconnect();
 	}
 	else
-		std::cout << "initialization failed" << std::endl;
+		LOG_F(ERROR, "Failed tray initialization");
 
 	return 0;
 }

@@ -20,6 +20,7 @@ set(PHALANXTRAY_EXE_FILES
 	source/ContentMode/ContentModeTime.cpp
 	source/savedata.cpp
 	source/main.cpp
+	lib/loguru/loguru.cpp
 )
 
 if(WIN32)
@@ -48,3 +49,5 @@ target_include_directories(PhalanxTray PUBLIC lib/fmt/include)
 target_link_libraries(PhalanxTray PUBLIC fmt)
 
 target_link_libraries(PhalanxTray PUBLIC asio::asio)
+
+target_include_directories(PhalanxTray PUBLIC lib/loguru)

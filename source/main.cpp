@@ -155,6 +155,11 @@ void onTick()
 
 				break;
 			}
+			case ECommand::Goodbye:
+			{
+				killContentMode(contentModeId);
+				break;
+			}
 			default:
 				LOG_F(ERROR, "unable to determine command");
 				break;

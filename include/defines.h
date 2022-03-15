@@ -24,6 +24,7 @@ namespace PhalanxTray
 		Hello,
 		Keepalive,
 		SendData,
+		Goodbye
 	};
 
 	enum EContentModeId : uint8_t
@@ -37,7 +38,8 @@ namespace PhalanxTray
 	{
 		{ std::string("HELLO"), ECommand::Hello },
 		{ std::string("KEEPALIVE"), ECommand::Keepalive },
-		{ std::string("SENDDATA"), ECommand::SendData }
+		{ std::string("SENDDATA"), ECommand::SendData },
+		{ std::string("GOODBYE"), ECommand::Goodbye },
 	};
 
 	static std::unordered_map<std::string, EContentModeId> contentModeMap =

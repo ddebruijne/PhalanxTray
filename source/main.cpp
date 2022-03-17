@@ -261,7 +261,7 @@ void buildComPortMenu()
 	std::vector<serial::PortInfo> devices_found = serial::list_ports();
 	for (serial::PortInfo device : devices_found) 
 	{
-		comPorts.subMenu.push_back(new TrayMenu { device.port + " ("+ device.description + ")", true, strcmp(sav->serialport, device.port.c_str()) == 0, false, [=](TrayMenu* tm){ 
+		comPorts.subMenu.push_back(new TrayMenu { device.port + " ("+ device.description + ")", true, strcmp(sav->serialport, device.port.c_str()) == 0, true, [=](TrayMenu* tm){ 
 			for (TrayMenu* t : comPorts.subMenu)
 				t->isChecked = false;
 
@@ -283,7 +283,7 @@ void buildModelMenu()
 	SaveData* sav = SaveHandler::GetInstance().GetCurrentSaveData();
 
 	model = { "Model", true, false, false, nullptr, { 
-		new TrayMenu { "Phalanx", true, sav->model == EModel::Phalanx, false, [=](TrayMenu* tm){
+		new TrayMenu { "Phalanx", true, sav->model == EModel::Phalanx, true, [=](TrayMenu* tm){
 			for (TrayMenu* t : model.subMenu)
 				t->isChecked = false;
 			
@@ -292,7 +292,7 @@ void buildModelMenu()
 			SaveHandler::GetInstance().SaveCurrentData();
 			trayMaker.Update();
 		}},
-		new TrayMenu { "Ameise", true, sav->model == EModel::Ameise, false, [=](TrayMenu* tm){
+		new TrayMenu { "Ameise", true, sav->model == EModel::Ameise, true, [=](TrayMenu* tm){
 			for (TrayMenu* t : model.subMenu)
 				t->isChecked = false;
 			
@@ -301,7 +301,7 @@ void buildModelMenu()
 			SaveHandler::GetInstance().SaveCurrentData();
 			trayMaker.Update();
 		}},
-		new TrayMenu { "Noctiluca", true, sav->model == EModel::Noctiluca, false, [=](TrayMenu* tm){
+		new TrayMenu { "Noctiluca", true, sav->model == EModel::Noctiluca, true, [=](TrayMenu* tm){
 			for (TrayMenu* t : model.subMenu)
 				t->isChecked = false;
 			
@@ -318,14 +318,14 @@ void buildSettingsMenu()
 	SaveData* sav = SaveHandler::GetInstance().GetCurrentSaveData();
 
 	settingsMenu = { "Settings", true, false, false, nullptr, {
-		new TrayMenu { "Show Seconds", true, sav->timeSettings.showSeconds, false, [=](TrayMenu* tm){
+		new TrayMenu { "Show Seconds", true, sav->timeSettings.showSeconds, true, [=](TrayMenu* tm){
 			sav->timeSettings.showSeconds = !sav->timeSettings.showSeconds;
 			
 			tm->isChecked = sav->timeSettings.showSeconds;
 			SaveHandler::GetInstance().SaveCurrentData();
 			trayMaker.Update();
 		}},
-		new TrayMenu { "Show day/month at half minute", true, sav->timeSettings.showDate, false, [=](TrayMenu* tm){
+		new TrayMenu { "Show day/month at half minute", true, sav->timeSettings.showDate, true, [=](TrayMenu* tm){
 			sav->timeSettings.showDate = !sav->timeSettings.showDate;
 			
 			tm->isChecked = sav->timeSettings.showDate;
@@ -345,7 +345,7 @@ void buildContentModeMenu()
 	for (auto& pair : contentModes)
 	{
 		EContentModeId contentModeId = pair.second->contentModeId; // redefine for copy
-		contentModeMenu.subMenu.push_back(new TrayMenu { pair.second->contentModeName, true, pair.second == currentContentMode, false, [=](TrayMenu* tm){ 
+		contentModeMenu.subMenu.push_back(new TrayMenu { pair.second->contentModeName, true, pair.second == currentContentMode, true, [=](TrayMenu* tm){ 
 			if(!serialConn.isOpen())
 				return;
 

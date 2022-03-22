@@ -111,6 +111,7 @@
 		"strstream": "cpp",
 		"*.ipp": "cpp",
 		"unordered_set": "cpp",
+		"__tree": "cpp",
 		"regex": "cpp"
 	}
 }

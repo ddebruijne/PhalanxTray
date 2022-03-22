@@ -68,7 +68,6 @@
         "type": "cppdbg",
         "request": "launch",
         "program": "${workspaceFolder}/build/bin/PhalanxTray",
-        "args": ["arch -arm64"],
         "cwd": "${workspaceFolder}/build/bin",
         "preLaunchTask": "build_phalanxtray"
       },
@@ -77,7 +76,6 @@
         "type": "cppdbg",
         "request": "launch",
         "program": "${workspaceFolder}/build/bin/serial_example",
-        "args": ["arch -arm64"],
         "cwd": "${workspaceFolder}/build/bin",
         "preLaunchTask": "build_serial_example"
       },
@@ -86,7 +84,6 @@
         "type": "cppdbg",
         "request": "launch",
         "program": "${workspaceFolder}/build/bin/tray_example",
-        "args": ["arch -arm64"],
         "cwd": "${workspaceFolder}/build/bin",
         "preLaunchTask": "build_tray_example"
       },

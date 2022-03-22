@@ -54,6 +54,7 @@ Cmake is used to modularly include all dependencies.
 - [danskidb/Tray](https://github.com/danskidb/Tray) - tray icon for configuration and lifetime management.
 
 ## Idea list
+- if creating content mode with Keepalive packet, don't bring it to the foreground
 - Figure out a way to handle dots.
 - Improve time display mode by scrolling across the width of the display if not using full width.
 - Add more content modes!

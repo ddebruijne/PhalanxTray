@@ -1,13 +1,13 @@
 #include "tray.hpp"
 #include "serial/serial.h"
 #include "asio.hpp"
+#include "loguru.hpp"
 #include <iostream>
 #include <thread>
 
 #include "savedata.h"
 #include "ContentMode/ContentModeTime.h"
 #include "ContentMode/ContentModeFFXIV.h"
-#include "loguru.hpp"
 
 using namespace Tray;
 using namespace PhalanxTray;
@@ -29,7 +29,7 @@ std::atomic<bool> ticking = false;
 struct ContentSwitchInformation { EContentModeId newContentMode = EContentModeId::Time; bool wantsSwitch = false; };
 std::atomic<ContentSwitchInformation> contentSwitchInformation;
 std::shared_ptr<ContentModeBase> currentContentMode = nullptr;
-std::vector<std::shared_ptr<ContentModeBase>> allContentModes;
+std::unordered_map<EContentModeId, std::shared_ptr<ContentModeBase>> contentModes;
 
 asio::io_context io_context;
 asio::ip::udp::endpoint udpReceiver(asio::ip::address_v4::any(), 11001);
@@ -41,9 +41,8 @@ void buildContentModeMenu();	// TODO restructure main so we dont have to do forw
 void createContentMode(EContentModeId contentModeId)
 {
 	// check if content mode already exists & block
-	for (std::shared_ptr<ContentModeBase> contentModePtr : allContentModes)
-		if (contentModePtr->contentModeId == contentModeId)
-			return;
+	if (contentModes.find(contentModeId) != contentModes.end())
+		return;
 
 	std::shared_ptr<ContentModeBase> newContentMode;
 	switch(contentModeId) 
@@ -62,12 +61,31 @@ void createContentMode(EContentModeId contentModeId)
 	if (currentContentMode != nullptr && serialConn.isOpen())
 		currentContentMode->OnDeactivate();
 
-	allContentModes.push_back(newContentMode);
+	contentModes.insert({contentModeId, newContentMode});
 	currentContentMode = newContentMode;
 
 	if (serialConn.isOpen())
 		currentContentMode->OnActivate();
 
+	buildContentModeMenu();
+	trayMaker.Update();
+}
+
+void killContentMode(EContentModeId contentModeId)
+{
+	// Destroy content mode.
+	if (currentContentMode->contentModeId == contentModeId) 
+	{
+		if (serialConn.isOpen())
+			currentContentMode->OnDeactivate();
+		
+		currentContentMode = contentModes[EContentModeId::Time];
+
+		if (serialConn.isOpen())
+			currentContentMode->OnActivate();
+	}
+
+	contentModes.erase(contentModeId);
 	buildContentModeMenu();
 	trayMaker.Update();
 }
@@ -79,20 +97,19 @@ void onTick()
 	ContentSwitchInformation switchInfo = contentSwitchInformation.load();
 	if (switchInfo.wantsSwitch)
 	{
-		for (std::shared_ptr<ContentModeBase> contentModePtr : allContentModes)
-			if (switchInfo.newContentMode == contentModePtr->contentModeId)
-			{
-				if (currentContentMode != nullptr && serialConn.isOpen())
-					currentContentMode->OnDeactivate();
+		if (contentModes.find(switchInfo.newContentMode) != contentModes.end())
+		{
+			if (currentContentMode != nullptr && serialConn.isOpen())
+				currentContentMode->OnDeactivate();
 
-				currentContentMode = contentModePtr;
+			currentContentMode = contentModes[switchInfo.newContentMode];
 
-				if (serialConn.isOpen())
-					currentContentMode->OnActivate();
+			if (serialConn.isOpen())
+				currentContentMode->OnActivate();
 
-				buildContentModeMenu();
-				trayMaker.Update();
-			}
+			buildContentModeMenu();
+			trayMaker.Update();
+		}
 
 		switchInfo.wantsSwitch = false;
 		contentSwitchInformation = switchInfo;
@@ -111,45 +128,35 @@ void onTick()
 		ECommand command = commandMap[commandArray[0]];
 		commandArray.erase(commandArray.begin());
 
+		EContentModeId contentModeId = contentModeMap[commandArray[0]];
+
 		switch (command)
 		{
-			//TODO: Create Goodbye command
 			case ECommand::Hello:
 			{
-				EContentModeId contentModeId = contentModeMap[commandArray[0]];
 				createContentMode(contentModeId);
 				break;
 			}
 			case ECommand::Keepalive:
 			{
-				EContentModeId contentModeId = contentModeMap[commandArray[0]];
-				
-				bool found = false;
-				for (std::shared_ptr<ContentModeBase> contentModePtr : allContentModes)
-					if (contentModePtr->contentModeId == contentModeId)
-					{
-						contentModePtr->lastKeepaliveTimestamp = systemTimeMillis;
-						found = true;
-						break;
-					}
-
-				if (!found)
+				if (contentModes.find(switchInfo.newContentMode) != contentModes.end())
+					contentModes[contentModeId]->lastKeepaliveTimestamp = systemTimeMillis;
+				else
 					createContentMode(contentModeId);
 
 				break;
 			}
 			case ECommand::SendData:
 			{
-				EContentModeId contentModeId = contentModeMap[commandArray[0]];
 				commandArray.erase(commandArray.begin());
+				if (contentModes.find(switchInfo.newContentMode) != contentModes.end())
+					contentModes[contentModeId]->OnDataReceived(commandArray);
 
-				for (std::shared_ptr<ContentModeBase> contentModePtr : allContentModes)
-					if (contentModePtr->contentModeId == contentModeId)
-					{
-						contentModePtr->OnDataReceived(commandArray);
-						break;
-					}
-
+				break;
+			}
+			case ECommand::Goodbye:
+			{
+				killContentMode(contentModeId);
 				break;
 			}
 			default:
@@ -159,33 +166,21 @@ void onTick()
 	}
 
 	// Check if any keepalives expired
-	if(!allContentModes.empty())
-		for (int i = allContentModes.size()-1; i >= 0; i--)
+	EContentModeId toRemove = EContentModeId::Unknown;
+	for (auto& pair : contentModes)
+	{
+		if(!pair.second->usesKeepalive)
+			continue;
+
+		if ((systemTimeMillis - pair.second->lastKeepaliveTimestamp) > 10000)
 		{
-			std::shared_ptr<ContentModeBase> contentModePtr = allContentModes[i];
-			if (!contentModePtr->usesKeepalive)
-				continue;
-
-			if ((systemTimeMillis - contentModePtr->lastKeepaliveTimestamp) > 10000)
-			{
-				// Destroy content mode.
-				LOG_F(INFO, "Killing %s", contentModePtr->contentModeName.c_str());
-				allContentModes.erase(allContentModes.begin()+i);
-				if (contentModePtr == currentContentMode) 
-				{
-					if (serialConn.isOpen())
-						currentContentMode->OnDeactivate();
-					
-					currentContentMode = allContentModes.front();
-
-					if (serialConn.isOpen())
-						currentContentMode->OnActivate();
-				}
-
-				buildContentModeMenu();
-				trayMaker.Update();
-			}
+			toRemove = pair.first;
+			break;
 		}
+	}
+
+	if(toRemove != EContentModeId::Unknown)
+		killContentMode(toRemove);
 
 	// Update the current content mode.
 	long updateFrequency = 2000;
@@ -266,7 +261,7 @@ void buildComPortMenu()
 	std::vector<serial::PortInfo> devices_found = serial::list_ports();
 	for (serial::PortInfo device : devices_found) 
 	{
-		comPorts.subMenu.push_back(new TrayMenu { device.port + " ("+ device.description + ")", true, strcmp(sav->serialport, device.port.c_str()) == 0, false, [=](TrayMenu* tm){ 
+		comPorts.subMenu.push_back(new TrayMenu { device.port + " ("+ device.description + ")", true, strcmp(sav->serialport, device.port.c_str()) == 0, true, [=](TrayMenu* tm){ 
 			for (TrayMenu* t : comPorts.subMenu)
 				t->isChecked = false;
 
@@ -288,7 +283,7 @@ void buildModelMenu()
 	SaveData* sav = SaveHandler::GetInstance().GetCurrentSaveData();
 
 	model = { "Model", true, false, false, nullptr, { 
-		new TrayMenu { "Phalanx", true, sav->model == EModel::Phalanx, false, [=](TrayMenu* tm){
+		new TrayMenu { "Phalanx", true, sav->model == EModel::Phalanx, true, [=](TrayMenu* tm){
 			for (TrayMenu* t : model.subMenu)
 				t->isChecked = false;
 			
@@ -297,7 +292,7 @@ void buildModelMenu()
 			SaveHandler::GetInstance().SaveCurrentData();
 			trayMaker.Update();
 		}},
-		new TrayMenu { "Ameise", true, sav->model == EModel::Ameise, false, [=](TrayMenu* tm){
+		new TrayMenu { "Ameise", true, sav->model == EModel::Ameise, true, [=](TrayMenu* tm){
 			for (TrayMenu* t : model.subMenu)
 				t->isChecked = false;
 			
@@ -306,7 +301,7 @@ void buildModelMenu()
 			SaveHandler::GetInstance().SaveCurrentData();
 			trayMaker.Update();
 		}},
-		new TrayMenu { "Noctiluca", true, sav->model == EModel::Noctiluca, false, [=](TrayMenu* tm){
+		new TrayMenu { "Noctiluca", true, sav->model == EModel::Noctiluca, true, [=](TrayMenu* tm){
 			for (TrayMenu* t : model.subMenu)
 				t->isChecked = false;
 			
@@ -323,14 +318,14 @@ void buildSettingsMenu()
 	SaveData* sav = SaveHandler::GetInstance().GetCurrentSaveData();
 
 	settingsMenu = { "Settings", true, false, false, nullptr, {
-		new TrayMenu { "Show Seconds", true, sav->timeSettings.showSeconds, false, [=](TrayMenu* tm){
+		new TrayMenu { "Show Seconds", true, sav->timeSettings.showSeconds, true, [=](TrayMenu* tm){
 			sav->timeSettings.showSeconds = !sav->timeSettings.showSeconds;
 			
 			tm->isChecked = sav->timeSettings.showSeconds;
 			SaveHandler::GetInstance().SaveCurrentData();
 			trayMaker.Update();
 		}},
-		new TrayMenu { "Show day/month at half minute", true, sav->timeSettings.showDate, false, [=](TrayMenu* tm){
+		new TrayMenu { "Show day/month at half minute", true, sav->timeSettings.showDate, true, [=](TrayMenu* tm){
 			sav->timeSettings.showDate = !sav->timeSettings.showDate;
 			
 			tm->isChecked = sav->timeSettings.showDate;
@@ -347,10 +342,10 @@ void buildContentModeMenu()
 
 	contentModeMenu.subMenu.clear();
 
-	for (std::shared_ptr<ContentModeBase> contentModePtr : allContentModes)
+	for (auto& pair : contentModes)
 	{
-		EContentModeId contentModeId = contentModePtr->contentModeId; // redefine for copy
-		contentModeMenu.subMenu.push_back(new TrayMenu { contentModePtr->contentModeName, true, contentModePtr == currentContentMode, false, [=](TrayMenu* tm){ 
+		EContentModeId contentModeId = pair.second->contentModeId; // redefine for copy
+		contentModeMenu.subMenu.push_back(new TrayMenu { pair.second->contentModeName, true, pair.second == currentContentMode, true, [=](TrayMenu* tm){ 
 			if(!serialConn.isOpen())
 				return;
 
@@ -369,7 +364,7 @@ int main(int argc, char *argv[])
 	SaveData* sav = SaveHandler::GetInstance().GetCurrentSaveData();
 
 	currentContentMode = std::make_shared<ContentModeTime>(&serialConn);
-	allContentModes.push_back(currentContentMode);
+	contentModes.insert({EContentModeId::Time, currentContentMode});
 
 	buildComPortMenu();
 	buildModelMenu();

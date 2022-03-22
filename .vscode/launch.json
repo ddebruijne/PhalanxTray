@@ -6,7 +6,16 @@
     "configurations": [
       // OSX
       {
-        "name": "Mac: PhalanxTray",
+        "name": "Mac: PhalanxTray Bundle (arm64)",
+        "type": "lldb",
+        "request": "launch",
+        "program": "${workspaceFolder}/build/bin/PhalanxTray.app",
+        "args": ["arch -arm64"],
+        "cwd": "${workspaceFolder}/build/bin",
+        "preLaunchTask": "build_phalanxtray"
+      },
+      {
+        "name": "Mac: PhalanxTray (arm64)",
         "type": "lldb",
         "request": "launch",
         "program": "${workspaceFolder}/build/bin/PhalanxTray",
@@ -15,7 +24,7 @@
         "preLaunchTask": "build_phalanxtray"
       },
       {
-        "name": "Mac: serial exammple",
+        "name": "Mac: serial exammple (arm64)",
         "type": "lldb",
         "request": "launch",
         "program": "${workspaceFolder}/build/bin/serial_example",
@@ -24,7 +33,7 @@
         "preLaunchTask": "build_serial_example"
       },
       {
-        "name": "Mac: tray exammple",
+        "name": "Mac: tray exammple (arm64)",
         "type": "lldb",
         "request": "launch",
         "program": "${workspaceFolder}/build/bin/tray_example",

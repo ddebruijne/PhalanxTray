@@ -169,7 +169,7 @@ void onTick()
 			if ((systemTimeMillis - contentModePtr->lastKeepaliveTimestamp) > 10000)
 			{
 				// Destroy content mode.
-				LOG_F(INFO, "Killing %s", contentModePtr->contentModeName);
+				LOG_F(INFO, "Killing %s", contentModePtr->contentModeName.c_str());
 				allContentModes.erase(allContentModes.begin()+i);
 				if (contentModePtr == currentContentMode) 
 				{

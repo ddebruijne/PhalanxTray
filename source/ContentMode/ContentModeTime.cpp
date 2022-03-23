@@ -30,13 +30,13 @@ void ContentModeTime::OnTick()
         switch (sav->model)
         {
             case EModel::Phalanx:
-                currentDisplayText = fmt::format("{:02}  {:02}", now->tm_mday, now->tm_mon);
+                currentDisplayText = fmt::format("{:02}  {:02}", now->tm_mday, now->tm_mon+1);
                 break;
             case EModel::Ameise:
                 currentDisplayText = fmt::format("{:02}   {}", now->tm_mday, monthMap[now->tm_mon]);
                 break;
             case EModel::Noctiluca:
-                currentDisplayText = fmt::format("{:02}{:02}", now->tm_mday, now->tm_mon);
+                currentDisplayText = fmt::format("{:02}{:02}", now->tm_mday, now->tm_mon+1);
                 break;
             default:
                 break;

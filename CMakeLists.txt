@@ -24,6 +24,7 @@ set(PHALANXTRAY_EXE_FILES
 )
 
 if(WIN32)
+	set(PHALANXTRAY_EXE_FILES ${PHALANXTRAY_EXE_FILES} source/Platform/windows.cpp)
 	configure_file(${CMAKE_CURRENT_LIST_DIR}/data/icon.ico ${CMAKE_BINARY_DIR}/bin/icon.ico COPYONLY)
 	add_executable(PhalanxTray ${PHALANXTRAY_EXE_FILES} data/appicon.rc)
 elseif(UNIX)

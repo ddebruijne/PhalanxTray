@@ -143,7 +143,7 @@ void onTick()
 				if (contentModes.find(switchInfo.newContentMode) != contentModes.end())
 					contentModes[contentModeId]->lastKeepaliveTimestamp = systemTimeMillis;
 				else
-					createContentMode(contentModeId);
+					createContentMode(contentModeId);	//TODO don't bring to foreground.
 
 				break;
 			}

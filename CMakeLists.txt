@@ -28,6 +28,7 @@ if(WIN32)
 	add_executable(PhalanxTray ${PHALANXTRAY_EXE_FILES} data/appicon.rc)
 elseif(UNIX)
 	if(APPLE AND ${MACOSX_MAKE_BUNDLE})
+		set(PHALANXTRAY_EXE_FILES ${PHALANXTRAY_EXE_FILES} source/Platform/darwin.mm)
 		set(MACOSX_BUNDLE_ICON_FILE icon.icns)
 		set(MACOSX_BUNDLE_GUI_IDENTIFIER donk.phalanxtray)
 		set(APP_ICON_MACOSX 

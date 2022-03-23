@@ -6,6 +6,7 @@
 #include <thread>
 
 #include "savedata.h"
+#include "platform.h"
 #include "ContentMode/ContentModeTime.h"
 #include "ContentMode/ContentModeFFXIV.h"
 
@@ -358,7 +359,7 @@ void buildContentModeMenu()
 int main(int argc, char *argv[])
 {
 	loguru::init(argc, argv);
-	loguru::add_file("PhalanxTray.log", loguru::Truncate, loguru::Verbosity_MAX);
+	loguru::add_file(Platform::GetLogPath().u8string().c_str(), loguru::Truncate, loguru::Verbosity_MAX);
 
 	SaveHandler::GetInstance().CreateAndLoadSave();
 	SaveData* sav = SaveHandler::GetInstance().GetCurrentSaveData();

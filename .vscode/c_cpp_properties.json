@@ -3,8 +3,7 @@
         {
             "name": "Mac",
             "includePath": [
-                "${workspaceFolder}/lib/tray/**",
-                "${workspaceFolder}/source/**"
+                "${workspaceFolder}/**"
             ],
             "macFrameworkPath": [],
             "compilerPath": "/opt/homebrew/bin/gcc-11",

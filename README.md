@@ -60,6 +60,14 @@ Cmake is used to modularly include all dependencies.
 - Add more content modes!
 - Handle invalid packets
 
+### Mac
+- Create DMG
+- Intel support - universal
+
+### Linux
+- Save paths https://stackoverflow.com/questions/1510104/where-to-store-application-data-non-user-specific-on-linux
+- Flatpak?
+
 ## Bookmarks
 - http://www.cpp-home.com/tutorials/225_1.htm
 - https://gist.github.com/minorsecond/cd23af812afffb656c8d7d413ed9792a 

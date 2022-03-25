@@ -140,7 +140,7 @@ void onTick()
 			}
 			case ECommand::Keepalive:
 			{
-				if (contentModes.find(switchInfo.newContentMode) != contentModes.end())
+				if (contentModes.find(contentModeId) != contentModes.end())
 					contentModes[contentModeId]->lastKeepaliveTimestamp = systemTimeMillis;
 				else
 					createContentMode(contentModeId);	//TODO don't bring to foreground.
@@ -150,7 +150,7 @@ void onTick()
 			case ECommand::SendData:
 			{
 				commandArray.erase(commandArray.begin());
-				if (contentModes.find(switchInfo.newContentMode) != contentModes.end())
+				if (contentModes.find(contentModeId) != contentModes.end())
 					contentModes[contentModeId]->OnDataReceived(commandArray);
 
 				break;

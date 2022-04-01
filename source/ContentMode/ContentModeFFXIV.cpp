@@ -1,5 +1,6 @@
 #include "ContentMode/ContentModeFFXIV.h"
 #include <iostream>
+#include "loguru.hpp"
 
 using namespace PhalanxTray;
 
@@ -11,6 +12,7 @@ ContentModeFFXIV::ContentModeFFXIV(serial::Serial* serialConnPtr) :
 
 void ContentModeFFXIV::OnActivate()
 {
+    LOG_F(INFO, "Enabled Content Mode: Final Fantasy XIV");
     currentDisplayText = "ff";
 }
 
